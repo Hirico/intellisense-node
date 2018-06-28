@@ -18,7 +18,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('extension.searchAPI', () => {
-        vscode.window.showInputBox({prompt: 'Describe the task you want to accomplish'}).then(desc => {
+        vscode.window.showInputBox({
+            prompt: 'Please describe the task you want to accomplish, and optionally provide involved variables',
+            value: 'I want a method to help me ${}, which probably takes ${} as input and returns ${}'
+        }).then(desc => {
             const editor = vscode.window.activeTextEditor;       
             if (editor !== undefined && desc !== undefined) {
                 const position = editor.selection.active;

@@ -20,7 +20,14 @@
                 "command": "extension.searchAPI",
                 "title": "Search Node API"
             }
-        ]
+        ],
+        "menus": {
+        "editor/context": [{
+            "when": "resourceLangId == javascript",
+            "command": "extension.searchAPI",
+            "group": "navigation"
+        }]
+    }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
