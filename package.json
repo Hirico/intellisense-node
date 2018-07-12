@@ -13,7 +13,7 @@
     "activationEvents": [
         "onCommand:extension.searchAPI",
         "onCommand:extension.selectInput",
-        "onCommand:extension.selectOutput",
+        "onCommand:extension.openSelection",
         "onCommand:extension.clearInfo"
     ],
     "main": "./out/extension",
@@ -28,8 +28,8 @@
                 "title": "Add to input"
             },
             {
-                "command": "extension.selectOutput",
-                "title": "Add to output"
+                "command": "extension.openSelection",
+                "title": "Open selection view"
             },
             {
                 "command": "extension.clearInfo",
@@ -39,7 +39,7 @@
         "menus": {
             "editor/context": [
                 {
-                    "when": "resourceLangId == javascript",
+                    "when": "resourceLangId == javascript && !editorHasSelection",
                     "command": "extension.searchAPI",
                     "group": "navigation"
                 },
@@ -49,8 +49,8 @@
                     "group": "navigation"
                 },
                 {
-                    "when": "resourceLangId == javascript && editorHasSelection",
-                    "command": "extension.selectOutput",
+                    "when": "resourceLangId == javascript",
+                    "command": "extension.openSelection",
                     "group": "navigation"
                 },
                 {
