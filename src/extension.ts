@@ -1,20 +1,16 @@
 'use strict';
 import * as vscode from 'vscode';
-import fetch from 'node-fetch';
+import axios from 'axios';
 
-/*
- * http://esprima.readthedocs.io/en/4.0/getting-started.html#using-node-js-to-play-with-esprima
- * Refer to the above documentation for AST object structure
- */
-import { parseScript } from 'esprima';
-
-let recPanel: vscode.WebviewPanel | undefined ;
+let recPanel: vscode.WebviewPanel | undefined;
 
 let selectionPanel: vscode.WebviewPanel | undefined ;
 
 let inputSelections: Array<string> = [];
 
 let outputSelections: Array<string> = [];
+
+let useCurrentLine: boolean = false;
 
 // this method is called when the extension is activated
 // extension is activated the very first time the command is executed
@@ -30,15 +26,21 @@ export function activate(context: vscode.ExtensionContext) {
             const editor = vscode.window.activeTextEditor;       
             if (editor !== undefined && desc !== undefined) {
                 const position = editor.selection.active;
-                const text = editor.document.getText();
-                // console.log(JSON.stringify(parseScript(text, { loc: true, tolerant: true })));
-                fetch("http://localhost:8088/api/search", { 
-                    method: 'POST',
-                    body: `{'desc': ${desc}, 'ast': ${JSON.stringify(parseScript(text, { loc: true, tolerant: true }))}, 'currentLine': ${position.line}， 'inputSelections': ${JSON.stringify(inputSelections)}, 'outputSelections': ${JSON.stringify(outputSelections)}}` 
-                })
-                .then(res => res.json())
-                .then(object => updateRecView(object.html))
-                .catch(error => console.error('Error: ', error));   
+                const code = editor.document.getText();
+                axios.post('http://localhost:8088/api/search', {
+                    desc,
+                    code,
+                    useCurrentLine,
+                    currentLine: position.line,
+                    inputSelections: JSON.stringify(inputSelections),
+                    outputSelections: JSON.stringify(outputSelections)
+                  })
+                  .then(function (response) {
+                    updateRecView(response.data.html);
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
                 // testRecView
                 // updateRecView(`<!DOCTYPE html>
                 // <html lang="en">
@@ -141,7 +143,9 @@ export function activate(context: vscode.ExtensionContext) {
                             <h3> Output: </h3>
                             <ul>
                                 ${outputList}
-                            </ul>                           
+                            </ul> 
+                            <input type="checkbox" id="currentLineToggle" name="useCurrentLine">   
+                            <label for="currentLineToggle">API function shall be inserted into current cursor position </label>                     
                         </body>
                         <script>
                                const vscode = acquireVsCodeApi();
@@ -149,7 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
                                    console.log('click');
                                    vscode.postMessage({
                                     type: 'delete',
-                                    id: element.parentElement.getAttribute("id")
+                                    id: element.parentElement.getAttribute("id"),
                                   }, '*');
                                }
                         </script>
