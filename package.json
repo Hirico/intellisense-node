@@ -11,7 +11,10 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.searchAPI"
+        "onCommand:extension.searchAPI",
+        "onCommand:extension.selectInput",
+        "onCommand:extension.selectOutput",
+        "onCommand:extension.clearInfo"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -19,15 +22,44 @@
             {
                 "command": "extension.searchAPI",
                 "title": "Search Node API"
+            },
+            {
+                "command": "extension.selectInput",
+                "title": "Add to input"
+            },
+            {
+                "command": "extension.selectOutput",
+                "title": "Add to output"
+            },
+            {
+                "command": "extension.clearInfo",
+                "title": "Clear stored selection"
             }
         ],
         "menus": {
-        "editor/context": [{
-            "when": "resourceLangId == javascript",
-            "command": "extension.searchAPI",
-            "group": "navigation"
-        }]
-    }
+            "editor/context": [
+                {
+                    "when": "resourceLangId == javascript",
+                    "command": "extension.searchAPI",
+                    "group": "navigation"
+                },
+                {
+                    "when": "resourceLangId == javascript && editorHasSelection",
+                    "command": "extension.selectInput",
+                    "group": "navigation"
+                },
+                {
+                    "when": "resourceLangId == javascript && editorHasSelection",
+                    "command": "extension.selectOutput",
+                    "group": "navigation"
+                },
+                {
+                    "when": "resourceLangId == javascript && !editorHasSelection" ,
+                    "command": "extension.clearInfo",
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
