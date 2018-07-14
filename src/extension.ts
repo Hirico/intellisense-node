@@ -28,7 +28,7 @@ enum OutputType {
 }
 
 interface InputVariable {
-    content: string,
+    content: string;
     type: InputType;
 }
 
@@ -53,7 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
             if (editor !== undefined && desc !== undefined) {
                 const position = editor.selection.active;
                 const code = editor.document.getText();
-                axios.post('http://localhost:8088/api/search', {
+                loadRecView();
+                axios.post('http://localhost:3000/api/search', {
                     desc,
                     code,
                     useCurrentLine,
@@ -61,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
                     inputSelections: JSON.stringify(inputSelections),
                     outputSelections: JSON.stringify(outputSelections)
                   })
-                  .then(function (response) {
+                  .then(function (response) {                   
                     updateRecView(response.data.html);
                   })
                   .catch(function (error) {
@@ -82,6 +83,60 @@ export function activate(context: vscode.ExtensionContext) {
             } 
         });      
     });
+
+    const loadRecView = () => {
+        if (selectionPanel) {
+            selectionPanel.dispose();
+        }
+        if (!recPanel) {
+            recPanel = vscode.window.createWebviewPanel(
+                'recommendationPanel',
+                'Recommended APIs',
+                vscode.ViewColumn.Three,
+                {}
+            );
+            recPanel.onDidDispose(() => {
+                recPanel = undefined;
+            }, null, context.subscriptions);
+        }    
+        // show loading html           
+        recPanel.webview.html = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Cat Coding</title>
+            <style>
+                #loader-wraper {
+                    display: flex;
+                    width: 100%;
+                    height: 100vh;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                #loader {
+                    border: 12px solid #f3f3f3;
+                    border-radius: 50%;
+                    border-top: 12px solid #555;
+                    width: 100px;
+                    height: 100px;
+                    -webkit-animation: spin 1s linear infinite; /* Safari */
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+                }
+            </style>
+        </head>
+        <body>
+            <div id="loader-wraper"> <p id="loader"></p> <p>Loading ...</p> </div>
+        </body>
+        </html>`;
+    };
 
     const updateRecView = (html: string) => {
         if (selectionPanel) {
@@ -137,7 +192,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!selectionPanel) {
             selectionPanel = vscode.window.createWebviewPanel(
                 'selectionPanel',
-                'Current selected fragments',
+                'Required characteristics of the searched API',
                 vscode.ViewColumn.Three,
                 {enableScripts: true}
             );
@@ -171,7 +226,8 @@ export function activate(context: vscode.ExtensionContext) {
             <option value="Object">type: Object</option>
         </select>
       <a href="#" onclick="deleteListItem(this)">delete</a></li>
-        `).join('');     
+        `).join('');
+        const updateInput = inputSelections.map((selection, i) => `document.getElementById("ti${i}").value="${selection.type}";`).join('');   
         const html = `<!DOCTYPE html>
                         <html lang="en">
                         <head>
@@ -195,12 +251,15 @@ export function activate(context: vscode.ExtensionContext) {
                                     <option value="string">possible type: string</option>
                                     <option value="Object">possible type: Object</option>
                                 </select>
-                            <div>
+                            <div style="margin-top:30px">
+                            <h3> Others: </h3>
                             <input type="checkbox" id="currentLineToggle" name="useCurrentLine" onchange="toggleCurrentLine(this)">   
                             <label for="currentLineToggle">API function shall be inserted into current cursor position </label></div>                    
                         </body>
                         <script>
                                const vscode = acquireVsCodeApi();
+                               ${updateInput}
+                               document.getElementById("to").value = ${JSON.stringify(outputSelections)};
                                function deleteListItem(element) {
                                    vscode.postMessage({
                                     type: 'delete',

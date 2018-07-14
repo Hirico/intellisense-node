@@ -25,15 +25,15 @@
             },
             {
                 "command": "extension.selectInput",
-                "title": "Add to input"
+                "title": "Mark as input"
             },
             {
                 "command": "extension.openSelection",
-                "title": "Open selection view"
+                "title": "Open API-search configuration"
             },
             {
                 "command": "extension.clearInfo",
-                "title": "Clear stored selection"
+                "title": "Clear API-search configuration"
             }
         ],
         "menus": {
