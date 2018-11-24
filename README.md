@@ -10,4 +10,4 @@ Currently it only supports a select set of nodejs APIs.
 
 ## How this works
 
-TBD
+See the 'Report' pdf
